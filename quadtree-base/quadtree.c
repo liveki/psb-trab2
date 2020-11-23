@@ -23,9 +23,9 @@ Img *geraNovaImagem(Img *pic, int x, int y, int width, int height)
     int indiceOut = 0;
 
     //PERCORRE A IMAGEM A PARTIR DO X E Y INFORMADO E FORMA UMA NOVA IMAGEM
-    for (int linha = x; linha < height; linha++)
+    for (int linha = y; linha < height; linha++)
     {
-        for (int coluna = y; coluna < width; coluna++)
+        for (int coluna = x; coluna < width; coluna++)
         {
             out[indiceOut].r = in[linha][coluna].r;
             out[indiceOut].g = in[linha][coluna].g;
@@ -108,10 +108,10 @@ QuadNode *geraQuadtree(Img *pic, float minDetail)
     diferencaMedia = diferencaMedia / (width * height);
 
     //SE A DIFERENCA MEDIA FOR MENOR QUE O NIVEL DE DETALHE, O STATUS DO NODO É PARCIAL
-    if (diferencaMedia == 0)
-        raiz->status = 0;
+    if (diferencaMedia <= minDetail)
+        raiz->status = PARCIAL;
     else
-        raiz->status = 1;
+        raiz->status = CHEIO;
 
     printf("diferenca media da regiao: %d\n", diferencaMedia);
 
@@ -119,15 +119,19 @@ QuadNode *geraQuadtree(Img *pic, float minDetail)
     raiz->color[1] = pixelGMedio;
     raiz->color[2] = pixelBMedio;
 
-    if (raiz->status == 0)
+    if (raiz->status == CHEIO)
         return raiz;
     else
-    {
-
-        QuadNode *ne = geraQuadtree(geraNovaImagem(pic, 0, 0, width / 2, height / 2), minDetail);
-        QuadNode *nw = geraQuadtree(geraNovaImagem(&pic, width / 2, 0, width / 2, height / 2), minDetail);
+    {      
+        QuadNode *ne = geraQuadtree(geraNovaImagem(&pic, 0, 0, width / 2, height / 2), minDetail);
+        QuadNode *nw = geraQuadtree(geraNovaImagem(&pic, (width / 2), 0, (width / 2), height / 2), minDetail);
         QuadNode *se = geraQuadtree(geraNovaImagem(&pic, 0, height / 2, width / 2, height / 2), minDetail);
         QuadNode *sw = geraQuadtree(geraNovaImagem(&pic, width / 2, height / 2, width / 2, height / 2), minDetail);
+
+        raiz-> NE = ne;
+        raiz->NW = nw;
+        raiz->SE = se;
+        raiz->SW = sw;
     }
 
     // COMENTE a linha abaixo quando seu algoritmo ja estiver funcionando
