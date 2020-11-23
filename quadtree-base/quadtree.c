@@ -12,24 +12,24 @@
 unsigned int first = 1;
 char desenhaBorda = 1;
 
-Img *geraNovaImagem(Img *pic, int x, int y, int width, int height)
+Img *geraNovaImagem(Img pic2, int x, int y, int width, int height)
 {
-    int sourceWidth = pic->width;
+    int sourceWidth = pic2.width;
 
     RGB(*in)
-    [sourceWidth] = (RGB(*)[sourceWidth])pic->img;
+    [sourceWidth] = (RGB(*)[sourceWidth])pic2.img;
 
     RGB *out = malloc((width * height) * sizeof *out);
     int indiceOut = 0;
 
     //PERCORRE A IMAGEM A PARTIR DO X E Y INFORMADO E FORMA UMA NOVA IMAGEM
-    for (int linha = y; linha < height; linha++)
+    for (int coluna = x; coluna < width; coluna++)
     {
-        for (int coluna = x; coluna < width; coluna++)
+        for (int linha = y; linha < height; linha++)
         {
-            out[indiceOut].r = in[linha][coluna].r;
-            out[indiceOut].g = in[linha][coluna].g;
-            out[indiceOut].b = in[linha][coluna].b;
+            out[indiceOut].r = in[coluna][linha].r;
+            out[indiceOut].g = in[coluna][linha].g;
+            out[indiceOut].b = in[coluna][linha].b;
 
             indiceOut++;
         }
@@ -109,9 +109,9 @@ QuadNode *geraQuadtree(Img *pic, float minDetail)
 
     //SE A DIFERENCA MEDIA FOR MENOR QUE O NIVEL DE DETALHE, O STATUS DO NODO É PARCIAL
     if (diferencaMedia <= minDetail)
-        raiz->status = PARCIAL;
-    else
         raiz->status = CHEIO;
+    else
+        raiz->status = PARCIAL;
 
     printf("diferenca media da regiao: %d\n", diferencaMedia);
 
@@ -122,13 +122,13 @@ QuadNode *geraQuadtree(Img *pic, float minDetail)
     if (raiz->status == CHEIO)
         return raiz;
     else
-    {      
-        QuadNode *ne = geraQuadtree(geraNovaImagem(&pic, 0, 0, width / 2, height / 2), minDetail);
-        QuadNode *nw = geraQuadtree(geraNovaImagem(&pic, (width / 2), 0, (width / 2), height / 2), minDetail);
-        QuadNode *se = geraQuadtree(geraNovaImagem(&pic, 0, height / 2, width / 2, height / 2), minDetail);
-        QuadNode *sw = geraQuadtree(geraNovaImagem(&pic, width / 2, height / 2, width / 2, height / 2), minDetail);
+    {
+        QuadNode *ne = geraQuadtree(geraNovaImagem(*pic, 0, 0, width / 2, height / 2), minDetail);
+        QuadNode *nw = geraQuadtree(geraNovaImagem(*pic, (width / 2), 0, (width / 2), height / 2), minDetail);
+        QuadNode *se = geraQuadtree(geraNovaImagem(*pic, 0, height / 2, width / 2, height / 2), minDetail);
+        QuadNode *sw = geraQuadtree(geraNovaImagem(*pic, width / 2, height / 2, width / 2, height / 2), minDetail);
 
-        raiz-> NE = ne;
+        raiz->NE = ne;
         raiz->NW = nw;
         raiz->SE = se;
         raiz->SW = sw;
