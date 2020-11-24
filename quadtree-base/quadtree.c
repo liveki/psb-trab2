@@ -12,36 +12,75 @@
 unsigned int first = 1;
 char desenhaBorda = 1;
 
-Img *geraNovaImagem(Img pic2, int x, int y, int width, int height)
+QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetail)
 {
-    int sourceWidth = pic2.width;
+    QuadNode *raiz = newNode(0, 0, width, height);
 
-    RGB(*in)
-    [sourceWidth] = (RGB(*)[sourceWidth])pic2.img;
+    RGB(*pixels)
+    [pic->width] = (RGB(*)[pic->width])pic->img;
 
-    RGB *out = malloc((width * height) * sizeof *out);
-    int indiceOut = 0;
+    int pixelRMedio = 0;
+    int pixelGMedio = 0;
+    int pixelBMedio = 0;
 
-    //PERCORRE A IMAGEM A PARTIR DO X E Y INFORMADO E FORMA UMA NOVA IMAGEM
-    for (int coluna = x; coluna < width; coluna++)
+    //PERCORRE A A REGIÃO IMAGEM E ENCONTRA A VARIAÇÃO MÉDIA DE R,G e B
+    for (int linha = y; linha < height; linha++)
     {
-        for (int linha = y; linha < height; linha++)
+        for (int coluna = x; coluna < width; coluna++)
         {
-            out[indiceOut].r = in[coluna][linha].r;
-            out[indiceOut].g = in[coluna][linha].g;
-            out[indiceOut].b = in[coluna][linha].b;
-
-            indiceOut++;
+            pixelRMedio += pixels[linha][coluna].r;
+            pixelGMedio += pixels[linha][coluna].g;
+            pixelBMedio += pixels[linha][coluna].b;
         }
     }
 
-    Img *newPic = malloc(sizeof(Img));
+    pixelRMedio = pixelRMedio / (width * height);
+    pixelGMedio = pixelGMedio / (width * height);
+    pixelBMedio = pixelBMedio / (width * height);
 
-    newPic->width = width;
-    newPic->height = height;
-    newPic->img = out;
+    int diferencaMedia = 0;
 
-    return newPic;
+    //PERCORRE A IMAGEM E ENCONTRA A DIFERENÇA TOTAL DE TODOS OS PIXELS
+    for (int linha = y; linha < height; linha++)
+    {
+        for (int coluna = x; coluna < width; coluna++)
+        {
+            diferencaMedia += sqrt(pow((pixels[linha][coluna].r - pixelRMedio), 2) + pow((pixels[linha][coluna].g - pixelGMedio), 2) + pow((pixels[linha][coluna].b - pixelBMedio), 2));
+        }
+    }
+
+    diferencaMedia = diferencaMedia / (width * height);
+
+    //SE A DIFERENCA MEDIA FOR MENOR QUE O NIVEL DE DETALHE, O STATUS DO NODO É PARCIAL
+    if (diferencaMedia <= minDetail)
+    {
+        raiz->color[0] = 255;
+        raiz->color[1] = 0;
+        raiz->color[2] = 0;
+        raiz->status = CHEIO;
+    }
+    else
+    {
+        raiz->color[0] = 0;
+        raiz->color[1] = 0;
+        raiz->color[2] = 255;
+        raiz->status = PARCIAL;
+    }
+
+    if (raiz->status == PARCIAL)
+    {
+        QuadNode *ne = geraNodo(pic, 0, 0, width / 2, height / 2, minDetail);
+        QuadNode *nw = geraNodo(pic, (width / 2), 0, (width / 2), height / 2, minDetail);
+        QuadNode *se = geraNodo(pic, 0, height / 2, width / 2, height / 2, minDetail);
+        QuadNode *sw = geraNodo(pic, width / 2, height / 2, width / 2, height / 2, minDetail);
+
+        raiz->NE = ne;
+        raiz->NW = nw;
+        raiz->SE = se;
+        raiz->SW = sw;
+    }
+
+    return raiz;
 }
 
 QuadNode *newNode(int x, int y, int width, int height)
@@ -59,80 +98,14 @@ QuadNode *newNode(int x, int y, int width, int height)
 
 QuadNode *geraQuadtree(Img *pic, float minDetail)
 {
-    // Converte o vetor RGB para uma MATRIZ que pode acessada por pixels[linha][coluna]
-    RGB(*pixels)
-    [pic->width] = (RGB(*)[pic->width])pic->img;
-
     printf("%d", pic->width);
-
-    // Veja como acessar os primeiros 10 pixels da imagem, por exemplo:
-    int i;
-    for (i = 0; i < 10; i++)
-        printf("%02X %02X %02X\n", pixels[0][i].r, pixels[1][i].g, pixels[2][i].b);
 
     int width = pic->width;
     int height = pic->height;
 
-    QuadNode *raiz = newNode(0, 0, width, height);
+    QuadNode *raiz = geraNodo(pic, 0, 0, width, height, minDetail);
 
-    int pixelRMedio = 0;
-    int pixelGMedio = 0;
-    int pixelBMedio = 0;
-
-    //PERCORRE A IMAGEM E ENCONTRA A VARIAÇÃO MÉDIA DE R,G e B
-    for (int linha = 0; linha < pic->height; linha++)
-    {
-        for (int coluna = 0; coluna < pic->width; coluna++)
-        {
-            pixelRMedio += pixels[linha][coluna].r;
-            pixelGMedio += pixels[linha][coluna].g;
-            pixelBMedio += pixels[linha][coluna].b;
-        }
-    }
-
-    pixelRMedio = pixelRMedio / (width * height);
-    pixelGMedio = pixelGMedio / (width * height);
-    pixelBMedio = pixelBMedio / (width * height);
-
-    int diferencaMedia = 0;
-
-    //PERCORRE A IMAGEM E ENCONTRA A DIFERENÇA TOTAL DE TODOS OS PIXELS
-    for (int linha = 0; linha < pic->height; linha++)
-    {
-        for (int coluna = 0; coluna < pic->width; coluna++)
-        {
-            diferencaMedia += sqrt(pow((pixels[linha][coluna].r - pixelRMedio), 2) + pow((pixels[linha][coluna].g - pixelGMedio), 2) + pow((pixels[linha][coluna].b - pixelBMedio), 2));
-        }
-    }
-
-    diferencaMedia = diferencaMedia / (width * height);
-
-    //SE A DIFERENCA MEDIA FOR MENOR QUE O NIVEL DE DETALHE, O STATUS DO NODO É PARCIAL
-    if (diferencaMedia <= minDetail)
-        raiz->status = CHEIO;
-    else
-        raiz->status = PARCIAL;
-
-    printf("diferenca media da regiao: %d\n", diferencaMedia);
-
-    raiz->color[0] = pixelRMedio;
-    raiz->color[1] = pixelGMedio;
-    raiz->color[2] = pixelBMedio;
-
-    if (raiz->status == CHEIO)
-        return raiz;
-    else
-    {
-        QuadNode *ne = geraQuadtree(geraNovaImagem(*pic, 0, 0, width / 2, height / 2), minDetail);
-        QuadNode *nw = geraQuadtree(geraNovaImagem(*pic, (width / 2), 0, (width / 2), height / 2), minDetail);
-        QuadNode *se = geraQuadtree(geraNovaImagem(*pic, 0, height / 2, width / 2, height / 2), minDetail);
-        QuadNode *sw = geraQuadtree(geraNovaImagem(*pic, width / 2, height / 2, width / 2, height / 2), minDetail);
-
-        raiz->NE = ne;
-        raiz->NW = nw;
-        raiz->SE = se;
-        raiz->SW = sw;
-    }
+    return raiz;
 
     // COMENTE a linha abaixo quando seu algoritmo ja estiver funcionando
     // Caso contrario, ele ira gerar uma arvore de teste com 3 nodos
