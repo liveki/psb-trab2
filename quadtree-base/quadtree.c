@@ -34,9 +34,12 @@ QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetai
         }
     }
 
-    pixelRMedio = pixelRMedio / (width * height);
-    pixelGMedio = pixelGMedio / (width * height);
-    pixelBMedio = pixelBMedio / (width * height);
+    if ((width * height) != 0)
+    {
+        pixelRMedio = pixelRMedio / (width * height);
+        pixelGMedio = pixelGMedio / (width * height);
+        pixelBMedio = pixelBMedio / (width * height);
+    }
 
     int diferencaMedia = 0;
 
@@ -49,7 +52,8 @@ QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetai
         }
     }
 
-    diferencaMedia = diferencaMedia / (width * height);
+    if ((width * height) != 0)
+        diferencaMedia = diferencaMedia / (width * height);
 
     raiz->color[0] = pixelRMedio;
     raiz->color[1] = pixelGMedio;

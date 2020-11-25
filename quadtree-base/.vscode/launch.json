@@ -9,7 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       /*"program": "${workspaceFolder}/quadtree.exe",*/
-      "args": ["star.png"],
+      "args": ["predio32.jpg"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
