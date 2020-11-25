@@ -14,7 +14,7 @@ char desenhaBorda = 1;
 
 QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetail)
 {
-    QuadNode *raiz = newNode(0, 0, width, height);
+    QuadNode *raiz = newNode(x, y, width, height);
 
     RGB(*pixels)
     [pic->width] = (RGB(*)[pic->width])pic->img;
@@ -23,10 +23,10 @@ QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetai
     int pixelGMedio = 0;
     int pixelBMedio = 0;
 
-    //PERCORRE A A REGIÃO IMAGEM E ENCONTRA A VARIAÇÃO MÉDIA DE R,G e B
-    for (int linha = y; linha < height; linha++)
+    //PERCORRE A A REGIÃO DA IMAGEM E ENCONTRA A VARIAÇÃO MÉDIA DE R,G e B
+    for (int linha = y; linha < (y + height); linha++)
     {
-        for (int coluna = x; coluna < width; coluna++)
+        for (int coluna = x; coluna < (x + width); coluna++)
         {
             pixelRMedio += pixels[linha][coluna].r;
             pixelGMedio += pixels[linha][coluna].g;
@@ -41,9 +41,9 @@ QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetai
     int diferencaMedia = 0;
 
     //PERCORRE A IMAGEM E ENCONTRA A DIFERENÇA TOTAL DE TODOS OS PIXELS
-    for (int linha = y; linha < height; linha++)
+    for (int linha = y; linha < (y + height); linha++)
     {
-        for (int coluna = x; coluna < width; coluna++)
+        for (int coluna = x; coluna < (x + width); coluna++)
         {
             diferencaMedia += sqrt(pow((pixels[linha][coluna].r - pixelRMedio), 2) + pow((pixels[linha][coluna].g - pixelGMedio), 2) + pow((pixels[linha][coluna].b - pixelBMedio), 2));
         }
@@ -51,34 +51,21 @@ QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetai
 
     diferencaMedia = diferencaMedia / (width * height);
 
-    //SE A DIFERENCA MEDIA FOR MENOR QUE O NIVEL DE DETALHE, O STATUS DO NODO É PARCIAL
-    if (diferencaMedia <= minDetail)
+    raiz->color[0] = pixelRMedio;
+    raiz->color[1] = pixelGMedio;
+    raiz->color[2] = pixelBMedio;
+
+    if (diferencaMedia > minDetail)
     {
-        raiz->color[0] = 255;
-        raiz->color[1] = 0;
-        raiz->color[2] = 0;
-        raiz->status = CHEIO;
+        raiz->status = PARCIAL;
+
+        raiz->NE = geraNodo(pic, x, y, width / 2, height / 2, minDetail);
+        raiz->NW = geraNodo(pic, x + (width / 2), y, width / 2, height / 2, minDetail);
+        raiz->SE = geraNodo(pic, x, y + (height / 2), width / 2, height / 2, minDetail);
+        raiz->SW = geraNodo(pic, x + (width / 2), y + (height / 2), width / 2, height / 2, minDetail);
     }
     else
-    {
-        raiz->color[0] = 0;
-        raiz->color[1] = 0;
-        raiz->color[2] = 255;
-        raiz->status = PARCIAL;
-    }
-
-    if (raiz->status == PARCIAL)
-    {
-        QuadNode *ne = geraNodo(pic, 0, 0, width / 2, height / 2, minDetail);
-        QuadNode *nw = geraNodo(pic, (width / 2), 0, (width / 2), height / 2, minDetail);
-        QuadNode *se = geraNodo(pic, 0, height / 2, width / 2, height / 2, minDetail);
-        QuadNode *sw = geraNodo(pic, width / 2, height / 2, width / 2, height / 2, minDetail);
-
-        raiz->NE = ne;
-        raiz->NW = nw;
-        raiz->SE = se;
-        raiz->SW = sw;
-    }
+        raiz->status = CHEIO;
 
     return raiz;
 }
@@ -106,44 +93,6 @@ QuadNode *geraQuadtree(Img *pic, float minDetail)
     QuadNode *raiz = geraNodo(pic, 0, 0, width, height, minDetail);
 
     return raiz;
-
-    // COMENTE a linha abaixo quando seu algoritmo ja estiver funcionando
-    // Caso contrario, ele ira gerar uma arvore de teste com 3 nodos
-
-    // #define DEMO
-    // #ifdef DEMO
-
-    //     /************************************************************/
-    //     /* Teste: criando uma raiz e dois nodos a mais              */
-    //     /************************************************************/
-
-    //     QuadNode *raiz = newNode(0, 0, width, height);
-    //     raiz->status = PARCIAL;
-    //     raiz->color[0] = 0;
-    //     raiz->color[1] = 0;
-    //     raiz->color[2] = 255;
-
-    //     QuadNode *nw = newNode(width / 2, 0, width / 2, height / 2);
-    //     nw->status = PARCIAL;
-    //     nw->color[0] = 0;
-    //     nw->color[1] = 0;
-    //     nw->color[2] = 255;
-
-    //     // Aponta da raiz para o nodo nw
-    //     raiz->NW = nw;
-
-    //     QuadNode *nw2 = newNode(width / 2 + width / 4, 0, width / 4, height / 4);
-    //     nw2->status = CHEIO;
-    //     nw2->color[0] = 255;
-    //     nw2->color[1] = 0;
-    //     nw2->color[2] = 0;
-
-    //     // Aponta do nodo nw para o nodo nw2
-    //     nw->NW = nw2;
-
-    // #endif
-    //     // Finalmente, retorna a raiz da árvore
-    //     return raiz;
 }
 
 // Limpa a memória ocupada pela árvore

@@ -9,7 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       /*"program": "${workspaceFolder}/quadtree.exe",*/
-      "args": ["sigil.jpg"],
+      "args": ["star.png"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
