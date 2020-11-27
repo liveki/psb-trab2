@@ -12,7 +12,7 @@
 unsigned int first = 1;
 char desenhaBorda = 1;
 
-QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetail)
+QuadNode *geraNodo(Img *pic, int x, int y, float width, float height, float minDetail)
 {
     QuadNode *raiz = newNode(x, y, width, height);
 
@@ -63,10 +63,10 @@ QuadNode *geraNodo(Img *pic, int x, int y, int width, int height, float minDetai
     {
         raiz->status = PARCIAL;
 
-        raiz->NE = geraNodo(pic, x, y, width / 2, height / 2, minDetail);
-        raiz->NW = geraNodo(pic, x + (width / 2), y, width / 2, height / 2, minDetail);
-        raiz->SE = geraNodo(pic, x, y + (height / 2), width / 2, height / 2, minDetail);
-        raiz->SW = geraNodo(pic, x + (width / 2), y + (height / 2), width / 2, height / 2, minDetail);
+        raiz->NE = geraNodo(pic, x, y, round(width / 2), round(height / 2), minDetail);
+        raiz->NW = geraNodo(pic, x + (width / 2), y, round(width / 2), round(height / 2), minDetail);
+        raiz->SE = geraNodo(pic, x, y + (height / 2), round(width / 2), round(height / 2), minDetail);
+        raiz->SW = geraNodo(pic, x + (width / 2), y + (height / 2), round(width / 2), round(height / 2), minDetail);
     }
     else
         raiz->status = CHEIO;
